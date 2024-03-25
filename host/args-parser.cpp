@@ -1,10 +1,12 @@
 #include "args-parser.hpp"
 
+#include <downscaler/ScalingAlgorithm.hpp>
+
 #include <filesystem>
 #include <stdexcept>
 #include <regex>
 
-static std::filesystem::path make_dir(const std::string& str)
+static std::filesystem::path MakeDir(const std::string& str)
 {
 	auto path = std::filesystem::path(str);
 	if (std::filesystem::exists(path) && !std::filesystem::is_directory(path))
@@ -14,24 +16,18 @@ static std::filesystem::path make_dir(const std::string& str)
 	return path;
 }
 
-//static std::filesystem::path make_path(const std::string& str)
-//{
-//	auto path = std::filesystem::path(str);
-//	if (!std::filesystem::exists(path) || std::filesystem::is_directory(path))
-//	{
-//		throw std::invalid_argument("no such file");
-//	}
-//	return path;
-//}
+static float StoF(const std::string& str)
+{
+	return std::stof(str);
+}
 
-//static int stoi(const std::string& str) { return std::stoi(str); }
-
-static float stof(const std::string& str) { return std::stof(str); }
-
-static std::string scopy(const std::string& str) { return str; }
+static downscaler::ScalingAlgorithm ParseMethod(const std::string& str)
+{
+	return downscaler::ScalingAlgorithmFromString(str);
+}
 
 template<typename TFunc>
-static void parse(const std::string& name, const std::map<std::string, std::string>& arguments, std::map<std::string, std::any>& config, TFunc&& f)
+static void Parse(const std::string& name, const std::map<std::string, std::string>& arguments, std::map<std::string, std::any>& config, TFunc&& f)
 {
 	try
 	{
@@ -50,7 +46,7 @@ static void parse(const std::string& name, const std::map<std::string, std::stri
 }
 
 template<typename TFunc>
-static bool tryParse(const std::string& name, const std::map<std::string, std::string>& arguments, std::map<std::string, std::any>& config, TFunc&& f, const std::string& value)
+static bool TryParse(const std::string& name, const std::map<std::string, std::string>& arguments, std::map<std::string, std::any>& config, TFunc&& f, const std::string& value)
 {
 	try
 	{
@@ -75,7 +71,7 @@ static bool tryParse(const std::string& name, const std::map<std::string, std::s
 	}
 }
 
-static std::map<std::string, std::string> parseArguments(int argc, char** argv)
+static std::map<std::string, std::string> ParseArguments(int argc, char** argv)
 {
 	static const auto regex = std::regex("--(\\w[\\w-]*)=(.+)");
 	auto result = std::map<std::string, std::string>();
@@ -92,16 +88,16 @@ static std::map<std::string, std::string> parseArguments(int argc, char** argv)
 	return result;
 }
 
-std::map<std::string, std::any> getConfig(int argc, char** argv)
+std::map<std::string, std::any> GetConfig(int argc, char** argv)
 {
-	auto stringArguments = parseArguments(argc, argv);
+	auto stringArguments = ParseArguments(argc, argv);
 
 	auto result = std::map<std::string, std::any>();
 
-	tryParse("src", stringArguments, result, make_dir, ".");
-	tryParse("dst", stringArguments, result, make_dir, "out");
-	parse("method", stringArguments, result, scopy);
-	parse("scale", stringArguments, result, stof);
+	TryParse("src", stringArguments, result, MakeDir, ".");
+	TryParse("dst", stringArguments, result, MakeDir, "./out");
+	Parse("method", stringArguments, result, ParseMethod);
+	Parse("scale", stringArguments, result, StoF);
 
 	return result;
 }

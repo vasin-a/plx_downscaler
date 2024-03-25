@@ -8,10 +8,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(SRC
 	include/downscaler/glm.hpp
 	include/downscaler/Pixmap.hpp
+	include/downscaler/PixmapConverter.hpp
 	include/downscaler/ScalingAlgorithm.hpp
+	include/downscaler/Transform.hpp
 
 	src/pch.hpp
-	src/Pixmap.cpp
+	src/ScalingAlgorithm.cpp
+	src/Transform.cpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SRC})

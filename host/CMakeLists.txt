@@ -9,9 +9,12 @@ set(SRC
 	args-parser.cpp
 	args-parser.hpp
 	main.cpp
+	pch.hpp
 )
 
 source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${SRC})
 add_executable(${PROJECT_NAME} ${SRC})
+
+target_precompile_headers(${PROJECT_NAME} PUBLIC pch.hpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE lib)
 target_link_libraries(${PROJECT_NAME} PRIVATE shared)
