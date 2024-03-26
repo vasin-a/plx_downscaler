@@ -10,7 +10,7 @@ ScalingAlgorithm ScalingAlgorithmFromString(std::string_view str)
 {
 	static constexpr std::pair<std::string_view, ScalingAlgorithm> kMap[] =
 	{
-		{"gauss", ScalingAlgorithm::GaussBlurSubsample},
+		{"gauss", ScalingAlgorithm::GaussianDownsample},
 		{"box", ScalingAlgorithm::BoxBlurMipMap},
 	};
 

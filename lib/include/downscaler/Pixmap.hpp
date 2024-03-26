@@ -38,8 +38,39 @@ public:
 		return { _width, _height };
 	}
 
-	template<typename Func> void ForEachPixel(Func&& calback) const;
-	BasicPixmap<T> Transpose() const;
+	template<typename Func> void ForEachPixelRead(const Func& callback) const
+	{
+		for (std::size_t i = 0; i != _height; ++i)
+		{
+			for (std::size_t j = 0; j != _width; ++j)
+			{
+				callback(glm::ivec2(j, i), _storage[i * _width + j]);
+			}
+		}
+	}
+
+	template<typename Func> void ForEachPixelWrite(const Func& callback)
+	{
+		for (std::size_t i = 0; i != _height; ++i)
+		{
+			for (std::size_t j = 0; j != _width; ++j)
+			{
+				_storage[i * _width + j] = callback(glm::ivec2(j, i));
+			}
+		}
+	}
+
+	BasicPixmap<T> Transpose() const
+	{
+		auto result = BasicPixmap<T>(glm::uvec2(_height, _width));
+
+		ForEachPixelRead([&](glm::ivec2 pos, T pixel)
+		{
+			result[pos.x * _height + pos.y] = T;
+		});
+
+		return result;
+	}
 
 	auto begin() noexcept { return _storage.begin(); }
 	auto begin() const noexcept { return _storage.begin(); }
@@ -57,37 +88,15 @@ public:
 
 	auto& operator[] (std::size_t pos) noexcept { return _storage[pos]; }
 	const auto& operator[] (std::size_t pos) const noexcept { return _storage[pos]; }
+	
+	auto& get(glm::ivec2 tc) noexcept { return _storage[_width * tc.y + tc.x]; }
+	const auto& get(glm::ivec2 tc) const noexcept { return _storage[_width * tc.y + tc.x]; }
 
 private:
 	std::size_t _width;
 	std::size_t _height;
 	std::vector<T> _storage;
 };
-
-template <typename T>
-template<typename Func> void BasicPixmap<T>::ForEachPixel(Func&& callback) const
-{
-	for (std::size_t i = 0; i != _height; ++i)
-	{
-		for (std::size_t j = 0; j != _width; ++j)
-		{
-			std::invoke(std::forward<Func>(callback), glm::ivec2(j, i));
-		}
-	}
-}
-
-template <typename T>
-BasicPixmap<T> BasicPixmap<T>::Transpose() const
-{
-	auto result = BasicPixmap<T>(glm::uvec2(_height, _width));
-
-	ForEachPixel([&](glm::ivec2 pos)
-	{
-		result[pos.x * _height + pos.y] = _storage[pos.y * _width + pos.x];
-	});
-
-	return result;
-}
 
 using Pixmap4f = BasicPixmap<glm::vec4>;
 using Pixmap3f = BasicPixmap<glm::vec3>;

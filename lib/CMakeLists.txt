@@ -12,9 +12,9 @@ set(SRC
 	include/downscaler/ScalingAlgorithm.hpp
 	include/downscaler/Transform.hpp
 
-	src/GaussianSubsample.hpp
-	src/NearestSampler.hpp
+	src/GaussianDownsample.cpp
 	src/pch.hpp
+	src/Sampler.hpp
 	src/ScalingAlgorithm.cpp
 	src/Transform.cpp
 )

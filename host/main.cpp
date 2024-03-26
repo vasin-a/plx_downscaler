@@ -49,7 +49,10 @@ void ProcessImage(const std::map<std::string, std::any>& config, const std::file
 	std::filesystem::create_directory(dstPath);
 
 	dstPath = dstPath / srcPath.filename().replace_extension("png");
-	stbi_write_png(dstPath.string().c_str(), gammaImg.width(), gammaImg.height(), 4, gammaImg.data(), gammaImg.width() * 4);
+
+	const auto width = static_cast<int>(gammaImg.width());
+	const auto height = static_cast<int>(gammaImg.height());
+	stbi_write_png(dstPath.string().c_str(), width, height, 4, gammaImg.data(), width * 4);
 }
 
 
