@@ -6,7 +6,9 @@
 
 #include <any>
 #include <filesystem>
+#include <functional>
 #include <map>
+#include <numeric>
 #include <regex>
 #include <stdexcept>
 #include <string>

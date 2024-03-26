@@ -1,7 +1,10 @@
 #pragma once
 
 #include <downscaler/glm.hpp>
+
+#include <functional>
 #include <vector>
+
 #include <cstdint>
 
 namespace downscaler
@@ -35,6 +38,9 @@ public:
 		return { _width, _height };
 	}
 
+	template<typename Func> void ForEachPixel(Func&& calback) const;
+	BasicPixmap<T> Transpose() const;
+
 	auto begin() noexcept { return _storage.begin(); }
 	auto begin() const noexcept { return _storage.begin(); }
 	auto cbegin() const noexcept { return _storage.cbegin(); }
@@ -48,11 +54,40 @@ public:
 
 	auto data() noexcept { return _storage.data(); }
 	auto data() const noexcept { return _storage.data(); }
+
+	auto& operator[] (std::size_t pos) noexcept { return _storage[pos]; }
+	const auto& operator[] (std::size_t pos) const noexcept { return _storage[pos]; }
+
 private:
 	std::size_t _width;
 	std::size_t _height;
 	std::vector<T> _storage;
 };
+
+template <typename T>
+template<typename Func> void BasicPixmap<T>::ForEachPixel(Func&& callback) const
+{
+	for (std::size_t i = 0; i != _height; ++i)
+	{
+		for (std::size_t j = 0; j != _width; ++j)
+		{
+			std::invoke(std::forward<Func>(callback), glm::ivec2(j, i));
+		}
+	}
+}
+
+template <typename T>
+BasicPixmap<T> BasicPixmap<T>::Transpose() const
+{
+	auto result = BasicPixmap<T>(glm::uvec2(_height, _width));
+
+	ForEachPixel([&](glm::ivec2 pos)
+	{
+		result[pos.x * _height + pos.y] = _storage[pos.y * _width + pos.x];
+	});
+
+	return result;
+}
 
 using Pixmap4f = BasicPixmap<glm::vec4>;
 using Pixmap3f = BasicPixmap<glm::vec3>;

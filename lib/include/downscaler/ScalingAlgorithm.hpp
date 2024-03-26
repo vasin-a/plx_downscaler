@@ -6,7 +6,7 @@
 namespace downscaler
 {
 
-enum ScalingAlgorithm
+enum class ScalingAlgorithm
 {
 	GaussBlurSubsample,
 	BoxBlurMipMap

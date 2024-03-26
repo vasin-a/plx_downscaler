@@ -10,8 +10,8 @@ ScalingAlgorithm ScalingAlgorithmFromString(std::string_view str)
 {
 	static constexpr std::pair<std::string_view, ScalingAlgorithm> kMap[] =
 	{
-		{"gauss", GaussBlurSubsample},
-		{"box", BoxBlurMipMap},
+		{"gauss", ScalingAlgorithm::GaussBlurSubsample},
+		{"box", ScalingAlgorithm::BoxBlurMipMap},
 	};
 
 	auto it = std::find_if(std::begin(kMap), std::end(kMap), [&](auto pair)
