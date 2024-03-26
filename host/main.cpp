@@ -18,13 +18,21 @@ std::variant<downscaler::Pixmap3ub, downscaler::Pixmap4ub> LoadImage(const std::
 	{
 	case 3:
 	{
-		auto pixmap = downscaler::Pixmap3ub(width, height, reinterpret_cast<const glm::u8vec3*>(data));
+		auto pixmap = downscaler::Pixmap3ub(
+			static_cast<unsigned>(width),
+			static_cast<unsigned>(height), 
+			reinterpret_cast<const glm::u8vec3*>(data));
+		
 		stbi_image_free(data);
 		return pixmap;
 	}
 	case 4:
 	{
-		auto pixmap = downscaler::Pixmap4ub(width, height, reinterpret_cast<const glm::u8vec4*>(data));
+		auto pixmap = downscaler::Pixmap4ub(
+			static_cast<unsigned>(width),
+			static_cast<unsigned>(height),
+			reinterpret_cast<const glm::u8vec4*>(data));
+
 		stbi_image_free(data);
 		return pixmap;
 	}

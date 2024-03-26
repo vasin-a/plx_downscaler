@@ -17,7 +17,7 @@ public:
 	using pixel_type = T;
 	using component_type = typename T::value_type;
 
-	BasicPixmap(std::size_t width, std::size_t height, const T* srcData) :
+	BasicPixmap(unsigned width, unsigned height, const T* srcData) :
 		_width(width),
 		_height(height),
 		_storage(srcData, srcData + width * height)
@@ -93,8 +93,8 @@ public:
 	const auto& get(glm::ivec2 tc) const noexcept { return _storage[_width * tc.y + tc.x]; }
 
 private:
-	std::size_t _width;
-	std::size_t _height;
+	unsigned _width;
+	unsigned _height;
 	std::vector<T> _storage;
 };
 

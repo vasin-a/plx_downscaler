@@ -16,9 +16,16 @@ static std::filesystem::path MakeDir(const std::string& str)
 	return path;
 }
 
-static float StoF(const std::string& str)
+static float ParseScale(const std::string& str)
 {
-	return std::stof(str);
+	const auto value = std::stof(str);
+
+	if (!(0.0f < value && value <= 1.0f))
+	{
+		throw std::invalid_argument("scale must be in (0..1]");
+	}
+
+	return value;
 }
 
 static downscaler::ScalingAlgorithm ParseMethod(const std::string& str)
@@ -97,7 +104,7 @@ std::map<std::string, std::any> GetConfig(int argc, char** argv)
 	TryParse("src", stringArguments, result, MakeDir, ".");
 	TryParse("dst", stringArguments, result, MakeDir, "./out");
 	Parse("method", stringArguments, result, ParseMethod);
-	Parse("scale", stringArguments, result, StoF);
+	Parse("scale", stringArguments, result, ParseScale);
 
 	return result;
 }

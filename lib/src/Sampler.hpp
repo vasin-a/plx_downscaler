@@ -1,8 +1,6 @@
 #pragma once
 
-#include <downscaler/Pixmap.hpp>
-
-#include <downscaler/glm.hpp>
+#include "MipMapChain.hpp"
 
 namespace downscaler
 {
@@ -22,7 +20,7 @@ public:
 	};
 
 private:
-	Pixmap4f _storage;
+	const Pixmap4f& _storage;
 };
 
 class BilinearSampler
@@ -32,9 +30,14 @@ public:
 	{
 	}
 
+	glm::vec4 SampleClampToBorderNormalized(glm::vec2 uv) const noexcept
+	{
+		return SampleClampToBorder(uv * glm::vec2(_storage.dim()));
+	}
+
 	glm::vec4 SampleClampToBorder(glm::vec2 uv) const noexcept
 	{
-		const auto size = glm::vec2(_storage.width(), _storage.height());
+		const auto size = glm::vec2(_storage.dim());
 
 		const auto SW = glm::clamp(glm::floor(uv - glm::vec2(0.5f)), glm::vec2(0.0f), size - 1.0f);
 		const auto NE = glm::clamp(glm::floor(uv - glm::vec2(0.5f)) + glm::vec2(1.0f), glm::vec2(0.0f), size - 1.0f);
@@ -58,7 +61,45 @@ public:
 	};
 
 private:
-	Pixmap4f _storage;
+	const Pixmap4f& _storage;
+};
+
+class TrilinearMipMapSampler
+{
+public:
+	TrilinearMipMapSampler(const Pixmap4f& storage, glm::vec2 scale) :
+		_mipMapChain(storage),
+		_lod(glm::compMax(glm::log2(1.0f / scale))),
+		_baseLevel(glm::floor(_lod)),
+		_nextLevel(glm::ceil(_lod))
+	{
+		_mipMapChain.GenerateMipMaps(_lod);
+	}
+
+	glm::vec4 SampleClampToBorder(glm::vec2 normalizedTC) const noexcept
+	{
+		normalizedTC = glm::clamp(normalizedTC, glm::vec2(0.0f), glm::vec2(1.0f));
+
+		const auto samplerBase = BilinearSampler(_mipMapChain.At(static_cast<unsigned>(_baseLevel)));
+		const auto samplerNext = BilinearSampler(_mipMapChain.At(static_cast<unsigned>(_nextLevel)));
+
+		if (_baseLevel != _nextLevel)
+		{
+			const auto colorBase = samplerBase.SampleClampToBorderNormalized(normalizedTC);
+			const auto colorNext = samplerNext.SampleClampToBorderNormalized(normalizedTC);
+			return glm::mix(colorBase, colorNext, glm::fract(_lod));
+		}
+		else
+		{
+			return samplerBase.SampleClampToBorderNormalized(normalizedTC);
+		}
+	}
+
+private:
+	MipMapChain _mipMapChain;
+	float _lod;
+	float _baseLevel;
+	float _nextLevel;
 };
 
 }
