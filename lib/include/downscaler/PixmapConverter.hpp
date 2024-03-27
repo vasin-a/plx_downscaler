@@ -183,26 +183,27 @@ constexpr T FromVec4Norm(const glm::vec4& orig)
 }
 
 template <typename T>
-Pixmap4f ToLinearImage(const BasicPixmap<T>& pixmap)
+Pixmap4f ToLinearImage(const BasicPixmap<T>& pixmap, float gamma)
 {
 	auto result = Pixmap4f(pixmap.dim());
 
-	std::transform(pixmap.cbegin(), pixmap.cend(), result.begin(), [](T pixel)
+	std::transform(pixmap.cbegin(), pixmap.cend(), result.begin(), [&](T pixel)
 	{
-		return glm::convertSRGBToLinear(ToVec4Norm(pixel));
+		glm::vec4 v4 = ToVec4Norm(pixel);
+		return glm::vec4(glm::pow(v4.rgb(), glm::vec3(gamma)), v4.a);
 	});
 
 	return result;
 }
 
 template <typename T>
-T ToGammaImage(const Pixmap4f& pixmap)
+T ToGammaImage(const Pixmap4f& pixmap, float gamma)
 {
 	auto result = T(pixmap.dim());
 
-	std::transform(pixmap.cbegin(), pixmap.cend(), result.begin(), [](glm::vec4 pixel)
+	std::transform(pixmap.cbegin(), pixmap.cend(), result.begin(), [&](glm::vec4 v4)
 	{
-		return FromVec4Norm<T::pixel_type>(glm::convertLinearToSRGB(pixel));
+		return FromVec4Norm<T::pixel_type>(glm::vec4(glm::pow(v4.rgb(), glm::vec3(gamma)), v4.a));
 	});
 
 	return result;

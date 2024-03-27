@@ -16,6 +16,16 @@ static std::filesystem::path MakeDir(const std::string& str)
 	return path;
 }
 
+static float ParseGamma(const std::string& str)
+{
+	return std::stof(str);
+}
+
+static downscaler::ScalingAlgorithm ParseMethod(const std::string& str)
+{
+	return downscaler::ScalingAlgorithmFromString(str);
+}
+
 static float ParseScale(const std::string& str)
 {
 	const auto value = std::stof(str);
@@ -26,11 +36,6 @@ static float ParseScale(const std::string& str)
 	}
 
 	return value;
-}
-
-static downscaler::ScalingAlgorithm ParseMethod(const std::string& str)
-{
-	return downscaler::ScalingAlgorithmFromString(str);
 }
 
 template<typename TFunc>
@@ -103,6 +108,7 @@ std::map<std::string, std::any> GetConfig(int argc, char** argv)
 
 	TryParse("src", stringArguments, result, MakeDir, ".");
 	TryParse("dst", stringArguments, result, MakeDir, "./out");
+	TryParse("gamma", stringArguments, result, ParseGamma, "2.2");
 	Parse("method", stringArguments, result, ParseMethod);
 	Parse("scale", stringArguments, result, ParseScale);
 

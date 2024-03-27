@@ -55,13 +55,15 @@ void ProcessImage(const std::map<std::string, std::any>& config, const std::file
 {
 	using namespace downscaler;
 
-	auto linearImg = std::visit([](auto img) {
-		return ToLinearImage(img);
+	const auto gamma = std::any_cast<float>(config.at("gamma"));
+
+	auto linearImg = std::visit([&](auto img) {
+		return ToLinearImage(img, gamma);
 	}, LoadImage(srcPath));
 
 	linearImg = ScaleTransform(linearImg, std::any_cast<ScalingAlgorithm>(config.at("method")), glm::vec2(std::any_cast<float>(config.at("scale"))));
 
-	auto gammaImg = ToGammaImage<Pixmap4ub>(linearImg);
+	auto gammaImg = ToGammaImage<Pixmap4ub>(linearImg, 1.0f / gamma);
 
 	auto dstPath = std::any_cast<const std::filesystem::path&>(config.at("dst"));
 	std::filesystem::create_directory(dstPath);
