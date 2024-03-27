@@ -5,7 +5,7 @@ namespace downscaler
 
 Pixmap4f BoxBlurMipMap(const Pixmap4f& in, glm::vec2 scale)
 {
-	const auto newDim = glm::ceil(glm::vec2(in.dim()) * scale);
+	const auto newDim = glm::round(glm::vec2(in.dim()) * scale);
 
 	const auto sampler = TrilinearMipMapSampler(in, scale);
 

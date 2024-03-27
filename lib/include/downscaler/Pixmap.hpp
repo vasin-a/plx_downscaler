@@ -89,8 +89,16 @@ public:
 	auto& operator[] (std::size_t pos) noexcept { return _storage[pos]; }
 	const auto& operator[] (std::size_t pos) const noexcept { return _storage[pos]; }
 	
-	auto& get(glm::ivec2 tc) noexcept { return _storage[_width * tc.y + tc.x]; }
-	const auto& get(glm::ivec2 tc) const noexcept { return _storage[_width * tc.y + tc.x]; }
+	auto& get(glm::ivec2 tc) noexcept
+	{
+		tc = glm::clamp(tc, glm::ivec2(0), glm::ivec2(dim()) - 1);
+		return _storage[_width * tc.y + tc.x];
+	}
+	const auto& get(glm::ivec2 tc) const noexcept
+	{
+		tc = glm::clamp(tc, glm::ivec2(0), glm::ivec2(dim()) - 1);
+		return _storage[_width * tc.y + tc.x];
+	}
 
 private:
 	unsigned _width;

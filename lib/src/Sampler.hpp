@@ -39,8 +39,8 @@ public:
 	{
 		const auto size = glm::vec2(_storage.dim());
 
-		const auto SW = glm::clamp(glm::floor(uv - glm::vec2(0.5f)), glm::vec2(0.0f), size - 1.0f);
-		const auto NE = glm::clamp(glm::floor(uv - glm::vec2(0.5f)) + glm::vec2(1.0f), glm::vec2(0.0f), size - 1.0f);
+		const auto SW = glm::clamp(glm::floor(uv), glm::vec2(0.0f), size - 1.0f);
+		const auto NE = glm::clamp(glm::floor(uv) + glm::vec2(1.0f), glm::vec2(0.0f), size - 1.0f);
 		const auto NW = glm::vec2{ SW.x, NE.y };
 		const auto SE = glm::vec2{ NE.x, SW.y };
 
@@ -49,7 +49,7 @@ public:
 		const auto valueNW = _storage.get(glm::ivec2(NW));
 		const auto valueSE = _storage.get(glm::ivec2(SE));
 
-		const auto fraction = glm::fract(uv - glm::vec2(0.5f));
+		const auto fraction = glm::fract(uv);
 
 		return glm::mix
 		(

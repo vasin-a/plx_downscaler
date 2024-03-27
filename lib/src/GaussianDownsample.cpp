@@ -48,7 +48,7 @@ Pixmap4f GaussianDownsample(const Pixmap4f& in, glm::vec2 scale)
 	const auto horizontalKernel = BuildKernel(kernelSize.x);
 	const auto verticalKernel = BuildKernel(kernelSize.y);
 
-	const auto horizontalSampler = NearestSampler(in);
+	const auto horizontalSampler = BilinearSampler(in);
 	auto blurredHorizontal = Pixmap4f(glm::uvec2(static_cast<unsigned>(newDim.x), in.dim().y));
 	blurredHorizontal.ForEachPixelWrite([&](glm::ivec2 dstPos)
 	{
@@ -63,16 +63,16 @@ Pixmap4f GaussianDownsample(const Pixmap4f& in, glm::vec2 scale)
 		return sum;
 	});
 
-	const auto verticalSampler = NearestSampler(blurredHorizontal);
+	const auto verticalSampler = BilinearSampler(blurredHorizontal);
 	auto blurredVertical = Pixmap4f(glm::uvec2(newDim));
 	blurredVertical.ForEachPixelWrite([&](glm::ivec2 dstPos)
 	{
-		auto srcPos = glm::vec2(dstPos) / scale + glm::vec2(0.0f, kernelOffset.y);
+		auto srcPos = glm::vec2(dstPos) / glm::vec2(1.0f, scale.y) + glm::vec2(0.0f, kernelOffset.y);
 		auto sum = glm::vec4(0.0f);
 
-		for (auto weight : horizontalKernel)
+		for (auto weight : verticalKernel)
 		{
-			sum += horizontalSampler.SampleClampToBorder(srcPos) * weight;
+			sum += verticalSampler.SampleClampToBorder(srcPos) * weight;
 			srcPos.y++;
 		}
 		return sum;
