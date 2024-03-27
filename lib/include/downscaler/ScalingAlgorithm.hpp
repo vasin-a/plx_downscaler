@@ -9,7 +9,8 @@ namespace downscaler
 enum class ScalingAlgorithm
 {
 	GaussianDownsample,
-	BoxBlurMipMap
+	BoxBlurMipMap,
+	Lanczos
 };
 
 ScalingAlgorithm ScalingAlgorithmFromString(std::string_view str);

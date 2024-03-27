@@ -12,6 +12,7 @@ ScalingAlgorithm ScalingAlgorithmFromString(std::string_view str)
 	{
 		{"gauss", ScalingAlgorithm::GaussianDownsample},
 		{"mip", ScalingAlgorithm::BoxBlurMipMap},
+		{"lanczos", ScalingAlgorithm::Lanczos}
 	};
 
 	auto it = std::find_if(std::begin(kMap), std::end(kMap), [&](auto pair)

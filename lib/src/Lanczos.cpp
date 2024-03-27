@@ -8,28 +8,47 @@
 namespace downscaler
 {
 
+static constexpr unsigned kLobes = 2; // Kernel is within interval [-Lobes..Lobes]
+
+static float sinc(float x)
+{
+	const auto sinArg = glm::pi<float>() * x;
+
+	if (glm::abs(sinArg) < 1e-6f)
+	{
+		return 1.0f;
+	}
+
+	return glm::sin(sinArg) / sinArg;
+}
+
+static float Lanczos(float x)
+{
+	if (glm::abs(x) >= kLobes)
+	{
+		return 0.0;
+	}
+
+	return sinc(x) * sinc(x / kLobes);
+}
+
 static float KernelCenterOffset(unsigned width)
 {
-	const auto sixSigma = static_cast<float>(width);
-	const auto begin = (sixSigma - 1.0f) * 0.5f;
+	const auto begin = (static_cast<float>(width) - 1.0f) * 0.5f;
 	return begin;
 }
 
-static float Gaussian(float sigma, float x)
-{
-	return glm::exp(-0.5f * (x / sigma) * (x / sigma));
-}
 
 static std::vector<float> BuildKernel(unsigned width)
 {
-	const auto sixSigma = static_cast<float>(width);
-	const auto sigma = sixSigma / 6.0f;
+	const auto kernelWindow = static_cast<float>(width) * 0.5f;
 	const auto begin = -KernelCenterOffset(width);
 
 	auto weights = std::vector<float>(width);
-	std::generate(weights.begin(), weights.end(), [x = begin, sigma]() mutable
+	std::generate(weights.begin(), weights.end(), [=, x = begin]() mutable
 	{
-		return Gaussian(sigma, x++);
+		const auto arg = ((x++) / kernelWindow) * kLobes;
+		return Lanczos(arg);
 	});
 
 
@@ -39,10 +58,10 @@ static std::vector<float> BuildKernel(unsigned width)
 	return weights;
 }
 
-Pixmap4f GaussianDownsample(const Pixmap4f& in, glm::vec2 scale)
+Pixmap4f Lanczos(const Pixmap4f& in, glm::vec2 scale)
 {
 	const auto newDim = glm::round(glm::vec2(in.dim()) * scale);
-	const auto kernelSize = glm::uvec2(glm::round(3.0f / scale));
+	const auto kernelSize = glm::uvec2(glm::round(2.0f / scale));
 	const auto kernelCenterOffset = glm::vec2(KernelCenterOffset(kernelSize.x), KernelCenterOffset(kernelSize.y));
 
 	const auto horizontalKernel = BuildKernel(kernelSize.x);

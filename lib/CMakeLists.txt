@@ -13,7 +13,8 @@ set(SRC
 	include/downscaler/Transform.hpp
 
 	src/BoxBlurMipMap.cpp
-	src/GaussianDownsample.cpp
+	src/Gaussian.cpp
+	src/Lanczos.cpp
 	src/MipMapChain.cpp
 	src/MipMapChain.hpp
 	src/pch.hpp

@@ -106,7 +106,7 @@ std::map<std::string, std::any> GetConfig(int argc, char** argv)
 
 	auto result = std::map<std::string, std::any>();
 
-	TryParse("src", stringArguments, result, MakeDir, ".");
+	TryParse("src", stringArguments, result, MakeDir, "./img");
 	TryParse("dst", stringArguments, result, MakeDir, "./out");
 	TryParse("gamma", stringArguments, result, ParseGamma, "2.2");
 	Parse("method", stringArguments, result, ParseMethod);
