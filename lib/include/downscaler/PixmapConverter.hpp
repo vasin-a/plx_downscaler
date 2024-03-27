@@ -125,7 +125,7 @@ constexpr glm::vec4 ToVec4Norm(const glm::vec<1, T, Q>& orig)
 		x = x / static_cast<float>(std::numeric_limits<T>::max());
 	}
 
-	return { x, 0.0f, 0.0f, 1.0f };
+	return { x, x, x, 1.0f };
 }
 
 template<typename T, glm::qualifier Q>

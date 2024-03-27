@@ -9,13 +9,23 @@
 #include <variant>
 #include <vector>
 
-std::variant<downscaler::Pixmap3ub, downscaler::Pixmap4ub> LoadImage(const std::filesystem::path& srcPath)
+static std::variant<downscaler::Pixmap1ub, downscaler::Pixmap3ub, downscaler::Pixmap4ub> LoadImage(const std::filesystem::path& srcPath)
 {
 	int width, height, channels;
 	const auto data = stbi_load(srcPath.string().c_str(), &width, &height, &channels, 0);
 
 	switch (channels)
 	{
+	case 1:
+	{
+		auto pixmap = downscaler::Pixmap1ub(
+			static_cast<unsigned>(width),
+			static_cast<unsigned>(height),
+			reinterpret_cast<const glm::u8vec1*>(data));
+
+		stbi_image_free(data);
+		return pixmap;
+	}
 	case 3:
 	{
 		auto pixmap = downscaler::Pixmap3ub(
