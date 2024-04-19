@@ -3,26 +3,56 @@
 namespace downscaler
 {
 
-Pixmap4f Gaussian(const Pixmap4f& in, glm::vec2 scale);
-Pixmap4f BoxBlurMipMap(const Pixmap4f& in, glm::vec2 scale, float bias);
-Pixmap4f BoxBlurMipMapFloor(const Pixmap4f& in, glm::vec2 scale, float bias);
-Pixmap4f Lanczos(const Pixmap4f& in, glm::vec2 scale);
+Pixmap4f Gaussian(Pixmap4f in, glm::vec2 scale);
+Pixmap4f BoxBlurMipMap(Pixmap4f in, glm::vec2 scale, float bias);
+Pixmap4f BoxBlurMipMapFloor(Pixmap4f in, glm::vec2 scale, float bias);
+Pixmap4f Lanczos(Pixmap4f in, glm::vec2 scale);
 
-Pixmap4f ScaleTransform(const Pixmap4f& src, ScalingAlgorithm algorithm, glm::vec2 scale, float bias)
+Pixmap4f ScaleTransform(Pixmap4f src, ScalingAlgorithm algorithm, glm::vec2 scale, float bias)
 {
 	switch (algorithm)
 	{
 	case ScalingAlgorithm::GaussianDownsample:
-		return Gaussian(src, scale);
+		return Gaussian(std::move(src), scale);
 	case ScalingAlgorithm::BoxBlurMipMap:
-		return BoxBlurMipMap(src, scale, bias);
+		return BoxBlurMipMap(std::move(src), scale, bias);
 	case ScalingAlgorithm::BoxBlurMipMapFloor:
-		return BoxBlurMipMapFloor(src, scale, bias);
+		return BoxBlurMipMapFloor(std::move(src), scale, bias);
 	case ScalingAlgorithm::Lanczos:
-		return Lanczos(src, scale);
+		return Lanczos(std::move(src), scale);
 	default:
 		std::terminate();
 	}
 }
 
+Pixmap4f PremultiplyAlpha(Pixmap4f img)
+{
+	for (auto& pixel : img)
+	{
+		const auto rgb = pixel.rgb() * pixel.a;
+
+		pixel = glm::vec4(rgb, pixel.a);
+	}
+
+	return img;
+}
+
+Pixmap4f UnpremultiplyAlpha(Pixmap4f img)
+{
+	for (auto& pixel : img)
+	{
+		if (glm::round(pixel.a * 255.0f) == 0.0f)
+		{
+			pixel = glm::vec4(0.0f);
+		}
+		else
+		{
+			const auto rgb = pixel.rgb() / pixel.a;
+
+			pixel = glm::vec4(rgb, pixel.a);
+		}
+	}
+
+	return img;
+}
 }

@@ -26,6 +26,21 @@ static float ParseLodBias(const std::string& str)
 	return std::stof(str);
 }
 
+static bool ParsePremultiply(const std::string& str)
+{
+	if (str == "true" || str == "yes" || str == "y")
+	{
+		return true;
+	}
+
+	if (str == "false" || str == "no" || str == "n")
+	{
+		return false;
+	}
+
+	throw std::invalid_argument("invalid premultiply value");
+}
+
 static downscaler::ScalingAlgorithm ParseMethod(const std::string& str)
 {
 	return downscaler::ScalingAlgorithmFromString(str);
@@ -115,6 +130,8 @@ std::map<std::string, std::any> GetConfig(int argc, char** argv)
 	TryParse("dst", stringArguments, result, MakeDir, "./out");
 	TryParse("gamma", stringArguments, result, ParseGamma, "2.2");
 	TryParse("lod-bias", stringArguments, result, ParseLodBias, "0.0");
+	TryParse("premultiply", stringArguments, result, ParsePremultiply, "false");
+
 	Parse("method", stringArguments, result, ParseMethod);
 	Parse("scale", stringArguments, result, ParseScale);
 

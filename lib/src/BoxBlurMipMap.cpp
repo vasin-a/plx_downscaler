@@ -4,11 +4,11 @@ namespace downscaler
 {
 
 template <typename Sampler>
-static Pixmap4f BoxBlurMipMapImpl(const Pixmap4f& in, glm::vec2 scale, float bias)
+static Pixmap4f BoxBlurMipMapImpl(Pixmap4f in, glm::vec2 scale, float bias)
 {
 	const auto newDim = glm::round(glm::vec2(in.dim()) * scale);
 
-	const auto sampler = Sampler(in, scale, bias);
+	const auto sampler = Sampler(std::move(in), scale, bias);
 
 	auto result = Pixmap4f(glm::uvec2(newDim));
 	result.ForEachPixelWrite([&](glm::ivec2 dstPos)
@@ -19,14 +19,14 @@ static Pixmap4f BoxBlurMipMapImpl(const Pixmap4f& in, glm::vec2 scale, float bia
 	return result;
 }
 
-Pixmap4f BoxBlurMipMap(const Pixmap4f& in, glm::vec2 scale, float bias)
+Pixmap4f BoxBlurMipMap(Pixmap4f in, glm::vec2 scale, float bias)
 {
-	return BoxBlurMipMapImpl<TrilinearMipMapSampler>(in, scale, bias);
+	return BoxBlurMipMapImpl<TrilinearMipMapSampler>(std::move(in), scale, bias);
 }
 
-Pixmap4f BoxBlurMipMapFloor(const Pixmap4f& in, glm::vec2 scale, float bias)
+Pixmap4f BoxBlurMipMapFloor(Pixmap4f in, glm::vec2 scale, float bias)
 {
-	return BoxBlurMipMapImpl<LinearMipMapFloorSampler>(in, scale, bias);
+	return BoxBlurMipMapImpl<LinearMipMapFloorSampler>(std::move(in), scale, bias);
 }
 
 }

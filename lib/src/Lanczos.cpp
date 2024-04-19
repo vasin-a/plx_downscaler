@@ -58,7 +58,7 @@ static std::vector<float> BuildKernel(unsigned width)
 	return weights;
 }
 
-Pixmap4f Lanczos(const Pixmap4f& in, glm::vec2 scale)
+Pixmap4f Lanczos(Pixmap4f in, glm::vec2 scale)
 {
 	const auto newDim = glm::round(glm::vec2(in.dim()) * scale);
 	const auto kernelSize = glm::uvec2(glm::round(2.0f / scale));

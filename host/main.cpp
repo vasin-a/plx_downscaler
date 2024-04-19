@@ -70,30 +70,45 @@ void ProcessImage(const std::map<std::string, std::any>& config, const std::file
 	using namespace downscaler;
 
 	const auto gamma = std::any_cast<float>(config.at("gamma"));
+	const auto premultiply = std::any_cast<bool>(config.at("premultiply"));
 
 	log("Loading image ", srcPath.string(), '\n');
-	auto linearImg = std::visit([&](auto img) {
+	auto img = std::visit([&](auto img)
+	{
 		log("Linearizing image ", srcPath.filename().string(), '\n');
 		return ToLinearImage(img, gamma);
 	}, LoadImage(srcPath));
 
+	if (premultiply)
+	{
+		log("Premultiplying alpha for image ", srcPath.filename().string(), '\n');
+		img = PremultiplyAlpha(std::move(img));
+	}
+
+
 	log("Transforming image ", srcPath.filename().string(), '\n');
-	linearImg = ScaleTransform(
-		linearImg,
+	img = ScaleTransform(
+		std::move(img),
 		std::any_cast<ScalingAlgorithm>(config.at("method")),
 		glm::vec2(std::any_cast<float>(config.at("scale"))),
 		std::any_cast<float>(config.at("lod-bias"))
 	);
 
+	if (premultiply)
+	{
+		log("Unremultiplying alpha for image ", srcPath.filename().string(), '\n');
+		img = UnpremultiplyAlpha(std::move(img));
+	}
+
 	log("Correcting gamma for ", srcPath.filename().string(), '\n');
-	auto gammaImg = ToGammaImage<Pixmap4ub>(linearImg, 1.0f / gamma);
+	auto gammaImg = ToGammaImage<Pixmap4ub>(img, 1.0f / gamma);
 
 	auto dstPath = std::any_cast<const std::filesystem::path&>(config.at("dst"));
 	std::filesystem::create_directory(dstPath);
 
 	dstPath = dstPath / srcPath.filename().replace_extension("png");
 
-	log("Saving image ", srcPath.filename().string(), '\n');
+	log("Saving image ", dstPath.string(), '\n');
 	const auto width = static_cast<int>(gammaImg.width());
 	const auto height = static_cast<int>(gammaImg.height());
 	stbi_write_png(dstPath.string().c_str(), width, height, 4, gammaImg.data(), width * 4);

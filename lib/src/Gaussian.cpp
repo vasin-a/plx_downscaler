@@ -39,7 +39,7 @@ static std::vector<float> BuildKernel(unsigned width)
 	return weights;
 }
 
-Pixmap4f Gaussian(const Pixmap4f& in, glm::vec2 scale)
+Pixmap4f Gaussian(Pixmap4f in, glm::vec2 scale)
 {
 	const auto newDim = glm::round(glm::vec2(in.dim()) * scale);
 	const auto kernelSize = glm::uvec2(glm::round(3.0f / scale));

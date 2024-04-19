@@ -75,8 +75,8 @@ private:
 class TrilinearMipMapSampler
 {
 public:
-	TrilinearMipMapSampler(const Pixmap4f& storage, glm::vec2 scale, float bias) :
-		_mipMapChain(storage)
+	TrilinearMipMapSampler(Pixmap4f storage, glm::vec2 scale, float bias) :
+		_mipMapChain(std::move(storage))
 	{
 		_lod = glm::log2(glm::compMax(1.0f / scale));
 		_baseLevel = static_cast<std::size_t>(glm::max(glm::floor(_lod + bias), 0.0f));
@@ -114,8 +114,8 @@ private:
 class LinearMipMapFloorSampler
 {
 public:
-	LinearMipMapFloorSampler(const Pixmap4f& storage, glm::vec2 scale, float bias) :
-		_mipMapChain(storage)
+	LinearMipMapFloorSampler(Pixmap4f storage, glm::vec2 scale, float bias) :
+		_mipMapChain(std::move(storage))
 	{
 		const auto lod = glm::log2(glm::compMax(1.0f / scale));
 		_level = static_cast<std::size_t>(glm::max(glm::floor(lod + bias), 0.0f));
