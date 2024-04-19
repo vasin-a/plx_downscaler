@@ -12,6 +12,7 @@ ScalingAlgorithm ScalingAlgorithmFromString(std::string_view str)
 	{
 		{"gauss", ScalingAlgorithm::GaussianDownsample},
 		{"mip", ScalingAlgorithm::BoxBlurMipMap},
+		{"mip-floor", ScalingAlgorithm::BoxBlurMipMapFloor},
 		{"lanczos", ScalingAlgorithm::Lanczos}
 	};
 

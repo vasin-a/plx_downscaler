@@ -21,6 +21,11 @@ static float ParseGamma(const std::string& str)
 	return std::stof(str);
 }
 
+static float ParseLodBias(const std::string& str)
+{
+	return std::stof(str);
+}
+
 static downscaler::ScalingAlgorithm ParseMethod(const std::string& str)
 {
 	return downscaler::ScalingAlgorithmFromString(str);
@@ -109,6 +114,7 @@ std::map<std::string, std::any> GetConfig(int argc, char** argv)
 	TryParse("src", stringArguments, result, MakeDir, "./img");
 	TryParse("dst", stringArguments, result, MakeDir, "./out");
 	TryParse("gamma", stringArguments, result, ParseGamma, "2.2");
+	TryParse("lod-bias", stringArguments, result, ParseLodBias, "0.0");
 	Parse("method", stringArguments, result, ParseMethod);
 	Parse("scale", stringArguments, result, ParseScale);
 

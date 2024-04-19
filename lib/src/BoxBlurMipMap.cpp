@@ -3,11 +3,12 @@
 namespace downscaler
 {
 
-Pixmap4f BoxBlurMipMap(const Pixmap4f& in, glm::vec2 scale)
+template <typename Sampler>
+static Pixmap4f BoxBlurMipMapImpl(const Pixmap4f& in, glm::vec2 scale, float bias)
 {
 	const auto newDim = glm::round(glm::vec2(in.dim()) * scale);
 
-	const auto sampler = TrilinearMipMapSampler(in, scale);
+	const auto sampler = Sampler(in, scale, bias);
 
 	auto result = Pixmap4f(glm::uvec2(newDim));
 	result.ForEachPixelWrite([&](glm::ivec2 dstPos)
@@ -16,6 +17,16 @@ Pixmap4f BoxBlurMipMap(const Pixmap4f& in, glm::vec2 scale)
 		return sampler.SampleClampToBorder(normalizedTC);
 	});
 	return result;
+}
+
+Pixmap4f BoxBlurMipMap(const Pixmap4f& in, glm::vec2 scale, float bias)
+{
+	return BoxBlurMipMapImpl<TrilinearMipMapSampler>(in, scale, bias);
+}
+
+Pixmap4f BoxBlurMipMapFloor(const Pixmap4f& in, glm::vec2 scale, float bias)
+{
+	return BoxBlurMipMapImpl<LinearMipMapFloorSampler>(in, scale, bias);
 }
 
 }

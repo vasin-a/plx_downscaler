@@ -10,6 +10,7 @@ enum class ScalingAlgorithm
 {
 	GaussianDownsample,
 	BoxBlurMipMap,
+	BoxBlurMipMapFloor,
 	Lanczos
 };
 

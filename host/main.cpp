@@ -78,7 +78,12 @@ void ProcessImage(const std::map<std::string, std::any>& config, const std::file
 	}, LoadImage(srcPath));
 
 	log("Transforming image ", srcPath.filename().string(), '\n');
-	linearImg = ScaleTransform(linearImg, std::any_cast<ScalingAlgorithm>(config.at("method")), glm::vec2(std::any_cast<float>(config.at("scale"))));
+	linearImg = ScaleTransform(
+		linearImg,
+		std::any_cast<ScalingAlgorithm>(config.at("method")),
+		glm::vec2(std::any_cast<float>(config.at("scale"))),
+		std::any_cast<float>(config.at("lod-bias"))
+	);
 
 	log("Correcting gamma for ", srcPath.filename().string(), '\n');
 	auto gammaImg = ToGammaImage<Pixmap4ub>(linearImg, 1.0f / gamma);
@@ -112,7 +117,7 @@ int main(int argc, char** argv)
 		{
 			log("Waiting for ", tasks.size(), " tasks...\n");
 
-			const auto desiredUpdatePeriod = std::chrono::nanoseconds(1000000000ull);
+			const auto desiredUpdatePeriod = std::chrono::nanoseconds(1'000'000'000ull);
 			const auto sampleStep = desiredUpdatePeriod / tasks.size();
 
 			tasks.erase(std::remove_if(tasks.begin(), tasks.end(), [&](auto& t)

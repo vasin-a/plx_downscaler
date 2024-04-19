@@ -5,11 +5,17 @@
 namespace downscaler
 {
 
+// GL_NEAREST
 class NearestSampler
 {
 public:
 	NearestSampler(const Pixmap4f& storage) : _storage(storage)
 	{
+	}
+
+	glm::vec4 SampleClampToBorderNormalized(glm::vec2 uv) const noexcept
+	{
+		return SampleClampToBorder(uv * glm::vec2(_storage.dim()));
 	}
 
 	glm::vec4 SampleClampToBorder(glm::vec2 uv) const noexcept
@@ -23,6 +29,7 @@ private:
 	const Pixmap4f& _storage;
 };
 
+// GL_LINEAR
 class BilinearSampler
 {
 public:
@@ -64,24 +71,25 @@ private:
 	const Pixmap4f& _storage;
 };
 
+// GL_LINEAR_MIPMAP_LINEAR
 class TrilinearMipMapSampler
 {
 public:
-	TrilinearMipMapSampler(const Pixmap4f& storage, glm::vec2 scale) :
-		_mipMapChain(storage),
-		_lod(glm::compMax(glm::log2(1.0f / scale))),
-		_baseLevel(glm::floor(_lod)),
-		_nextLevel(glm::ceil(_lod))
+	TrilinearMipMapSampler(const Pixmap4f& storage, glm::vec2 scale, float bias) :
+		_mipMapChain(storage)
 	{
-		_mipMapChain.GenerateMipMaps(_lod);
+		_lod = glm::log2(glm::compMax(1.0f / scale));
+		_baseLevel = static_cast<std::size_t>(glm::max(glm::floor(_lod + bias), 0.0f));
+		_nextLevel = static_cast<std::size_t>(glm::max(glm::ceil(_lod + bias), 0.0f));
+		_mipMapChain.GenerateMipMaps(_nextLevel);
 	}
 
 	glm::vec4 SampleClampToBorder(glm::vec2 normalizedTC) const noexcept
 	{
 		normalizedTC = glm::clamp(normalizedTC, glm::vec2(0.0f), glm::vec2(1.0f));
 
-		const auto samplerBase = BilinearSampler(_mipMapChain.At(static_cast<unsigned>(_baseLevel)));
-		const auto samplerNext = BilinearSampler(_mipMapChain.At(static_cast<unsigned>(_nextLevel)));
+		const auto samplerBase = BilinearSampler(_mipMapChain.At(_baseLevel));
+		const auto samplerNext = BilinearSampler(_mipMapChain.At(_nextLevel));
 
 		if (_baseLevel != _nextLevel)
 		{
@@ -98,8 +106,35 @@ public:
 private:
 	MipMapChain _mipMapChain;
 	float _lod;
-	float _baseLevel;
-	float _nextLevel;
+	std::size_t _baseLevel;
+	std::size_t _nextLevel;
+};
+
+// GL_LINEAR_MIPMAP_NEAREST analogue, except floor is used to select the mip level
+class LinearMipMapFloorSampler
+{
+public:
+	LinearMipMapFloorSampler(const Pixmap4f& storage, glm::vec2 scale, float bias) :
+		_mipMapChain(storage)
+	{
+		const auto lod = glm::log2(glm::compMax(1.0f / scale));
+		_level = static_cast<std::size_t>(glm::max(glm::floor(lod + bias), 0.0f));
+
+		_mipMapChain.GenerateMipMaps(_level);
+	}
+
+	glm::vec4 SampleClampToBorder(glm::vec2 normalizedTC) const noexcept
+	{
+		normalizedTC = glm::clamp(normalizedTC, glm::vec2(0.0f), glm::vec2(1.0f));
+
+		const auto sampler = BilinearSampler(_mipMapChain.At(_level));
+
+		return sampler.SampleClampToBorderNormalized(normalizedTC);
+	}
+
+private:
+	MipMapChain _mipMapChain;
+	std::size_t _level;
 };
 
 }

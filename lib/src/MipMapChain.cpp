@@ -49,16 +49,14 @@ const Pixmap4f& MipMapChain::Original() const noexcept
 	return _chain.front();
 }
 
-const Pixmap4f& MipMapChain::At(unsigned level) const
+const Pixmap4f& MipMapChain::At(std::size_t level) const
 {
 	return _chain.at(level);
 }
 
-void MipMapChain::GenerateMipMaps(float upToLod) const
+void MipMapChain::GenerateMipMaps(std::size_t upToLod)
 {
-	std::size_t lod = static_cast<std::size_t>(glm::ceil(upToLod));
-
-	for (std::size_t i = _chain.size(), len = _chain.capacity(); i < len && i <= lod; ++i)
+	for (std::size_t i = _chain.size(), len = _chain.capacity(); i < len && i <= upToLod; ++i)
 	{
 		_chain.emplace_back(BoxBlurDownsample(_chain.back()));
 	}
