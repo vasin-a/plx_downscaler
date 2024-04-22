@@ -47,7 +47,12 @@ Pixmap4f UnpremultiplyAlpha(Pixmap4f img)
 		}
 		else
 		{
-			const auto rgb = pixel.rgb() / pixel.a;
+			auto rgb = pixel.rgb() / pixel.a;
+
+			if (const auto maxValue = glm::compMax(rgb); maxValue > 1.0f)
+			{
+				rgb /= maxValue;
+			}
 
 			pixel = glm::vec4(rgb, pixel.a);
 		}

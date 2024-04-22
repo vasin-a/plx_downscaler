@@ -1,5 +1,6 @@
 #include "args-parser.hpp"
 
+#include <downscaler/AlphaPremultiply.hpp>
 #include <downscaler/ScalingAlgorithm.hpp>
 
 #include <filesystem>
@@ -26,16 +27,21 @@ static float ParseLodBias(const std::string& str)
 	return std::stof(str);
 }
 
-static bool ParsePremultiply(const std::string& str)
+static downscaler::AlphaPremultiply ParsePremultiply(const std::string& str)
 {
-	if (str == "true" || str == "yes" || str == "y")
+	if (str == "i" || str == "ignore" || str == "leave")
 	{
-		return true;
+		return downscaler::AlphaPremultiply::Ignore;
 	}
 
-	if (str == "false" || str == "no" || str == "n")
+	if (str == "p" || str == "mult" || str == "premultiply")
 	{
-		return false;
+		return downscaler::AlphaPremultiply::Premultiply;
+	}
+
+	if (str == "u" || str == "div" || str == "unpremultiply")
+	{
+		return downscaler::AlphaPremultiply::Unpremultiply;
 	}
 
 	throw std::invalid_argument("invalid premultiply value");
@@ -130,7 +136,8 @@ std::map<std::string, std::any> GetConfig(int argc, char** argv)
 	TryParse("dst", stringArguments, result, MakeDir, "./out");
 	TryParse("gamma", stringArguments, result, ParseGamma, "2.2");
 	TryParse("lod-bias", stringArguments, result, ParseLodBias, "0.0");
-	TryParse("premultiply", stringArguments, result, ParsePremultiply, "false");
+	TryParse("src-alpha", stringArguments, result, ParsePremultiply, "ignore");
+	TryParse("dst-alpha", stringArguments, result, ParsePremultiply, "ignore");
 
 	Parse("method", stringArguments, result, ParseMethod);
 	Parse("scale", stringArguments, result, ParseScale);

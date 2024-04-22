@@ -1,5 +1,6 @@
 #include "args-parser.hpp"
 
+#include <downscaler/AlphaPremultiply.hpp>
 #include <downscaler/Pixmap.hpp>
 #include <downscaler/PixmapConverter.hpp>
 #include <downscaler/Transform.hpp>
@@ -70,7 +71,8 @@ void ProcessImage(const std::map<std::string, std::any>& config, const std::file
 	using namespace downscaler;
 
 	const auto gamma = std::any_cast<float>(config.at("gamma"));
-	const auto premultiply = std::any_cast<bool>(config.at("premultiply"));
+	const auto srcAlpha = std::any_cast<AlphaPremultiply>(config.at("src-alpha"));
+	const auto dstAlpha = std::any_cast<AlphaPremultiply>(config.at("dst-alpha"));
 
 	log("Loading image ", srcPath.string(), '\n');
 	auto img = std::visit([&](auto img)
@@ -79,10 +81,27 @@ void ProcessImage(const std::map<std::string, std::any>& config, const std::file
 		return ToLinearImage(img, gamma);
 	}, LoadImage(srcPath));
 
-	if (premultiply)
+	switch (srcAlpha)
 	{
-		log("Premultiplying alpha for image ", srcPath.filename().string(), '\n');
+	case AlphaPremultiply::Ignore:
+	{
+		log("Leaving source alpha for image ", srcPath.filename().string(), " as is\n");
+		break;
+	}
+	case AlphaPremultiply::Premultiply:
+	{
+		log("Premultiplying source alpha for image ", srcPath.filename().string(), '\n');
 		img = PremultiplyAlpha(std::move(img));
+		break;
+	}
+	case AlphaPremultiply::Unpremultiply:
+	{
+		log("Unpremultiplying source alpha for image ", srcPath.filename().string(), '\n');
+		img = UnpremultiplyAlpha(std::move(img));
+		break;
+	}
+	default:
+		break;
 	}
 
 
@@ -94,10 +113,27 @@ void ProcessImage(const std::map<std::string, std::any>& config, const std::file
 		std::any_cast<float>(config.at("lod-bias"))
 	);
 
-	if (premultiply)
+	switch (dstAlpha)
 	{
-		log("Unremultiplying alpha for image ", srcPath.filename().string(), '\n');
+	case AlphaPremultiply::Ignore:
+	{
+		log("Leaving destination alpha for image ", srcPath.filename().string(), " as is\n");
+		break;
+	}
+	case AlphaPremultiply::Premultiply:
+	{
+		log("Premultiplying destination alpha for image ", srcPath.filename().string(), '\n');
+		img = PremultiplyAlpha(std::move(img));
+		break;
+	}
+	case AlphaPremultiply::Unpremultiply:
+	{
+		log("Unpremultiplying destination alpha for image ", srcPath.filename().string(), '\n');
 		img = UnpremultiplyAlpha(std::move(img));
+		break;
+	}
+	default:
+		break;
 	}
 
 	log("Correcting gamma for ", srcPath.filename().string(), '\n');
